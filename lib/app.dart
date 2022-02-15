@@ -15,34 +15,9 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
 
-
-
   String url_api = "";
   String times = '';
-
-
-  /*void checkVersion()async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    if( prefs.getString('version') != ""){
-      print('case1');
-      setState(() {
-        url_api = prefs.getString('version')!;
-        print(prefs.getString('version'));
-      });
-    }
-    else{
-      print('case2');
-      var client = http.Client();
-      var response = await client.get(Uri.parse('https://script.google.com/macros/s/AKfycbwYat3L816IAx_MVHEk2QsXE7_qi4qyB68EOnkmEIPpXyANiRaNeGgIt0DSK50r4vwe/exec?api=test_version'));
-      var json = jsonDecode(response.body);
-      print(json);
-      setState(() {
-        print(url_api);
-        url_api = json[0][1];
-      });
-      await prefs.setString('version', url_api);
-    }
-  }*/
+  List<dynamic> menu = [];
 
   void checkVersion()async{
       var client = http.Client();
@@ -55,9 +30,19 @@ class _AppState extends State<App> {
       });
   }
 
+  void getDataApp()async{
+    var client = http.Client();
+      var response = await client.get(Uri.parse('https://script.google.com/macros/s/AKfycbxo75fXZG1iNhViff0UV8UURb914BlGiy4AHUnAxiTPf45N_ZwlISwVCbI_RIg4WUxV/exec?api=app/drawer'));
+      var json = jsonDecode(response.body);
+      setState(() {
+        menu = json;
+      });
+  }
+
  @override
   void initState() {
     checkVersion();
+    getDataApp();
     super.initState();
   }
 
@@ -68,7 +53,7 @@ class _AppState extends State<App> {
         theme: ThemeData(
             primarySwatch: Colors.blue,
             fontFamily: "Arial",),
-        home: url_api != "" ? WebViewContainer(url_api,'search-workgroup','Tìm cơ sở')
+        home: url_api != "" && menu != [] ? WebViewContainer(url_api,menu[2][2],menu[2][1],menu)
         : MaterialApp(
         title: 'Flutter Web Views',
         theme: ThemeData(

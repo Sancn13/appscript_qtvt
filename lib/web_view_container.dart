@@ -5,18 +5,20 @@ class WebViewContainer extends StatefulWidget {
   final url;
   final page;
   final title;
-  WebViewContainer(this.url, this.page, this.title);
+  final app_data;
+  WebViewContainer(this.url, this.page, this.title, this.app_data);
   @override
-  createState() => _WebViewContainerState(this.url,this.page,this.title);
+  createState() => _WebViewContainerState(this.url,this.page,this.title,this.app_data);
 }
 class _WebViewContainerState extends State<WebViewContainer> {
 
   var _url;
   var page;
   var title="";
+  var app_data;
   String coordinates = "";
   final _key = UniqueKey();
-  _WebViewContainerState(this._url,this.page,this.title);
+  _WebViewContainerState(this._url,this.page,this.title,this.app_data);
 
   Future<Position> _determinePosition() async {
     bool serviceEnabled;
@@ -51,11 +53,35 @@ class _WebViewContainerState extends State<WebViewContainer> {
     });
   }
 
+  Icon loadIcon(String name_button){
+    if(name_button == 'Dữ liệu tổng hợp'){
+      return Icon(Icons.analytics);
+    }
+    else if(name_button == 'Thêm cơ sở'){
+      return Icon(Icons.add);
+    }
+    else if(name_button == 'Tìm cơ sở'){
+      return Icon(Icons.search);
+    }
+    else if(name_button == 'Tùy chọn'){
+      return Icon(Icons.settings);
+    }
+    else if(name_button == 'Đăng xuất'){
+      return Icon(Icons.logout);
+    }
+    else{
+      return Icon(Icons.help_rounded);
+    }
+  }
+
   @override
   void initState() {
     getCurrentLocation();
     super.initState();
   }
+
+  //final List<String> entries = <String>['data-report', 'add-workgroup', 'search-workgroup','setting','logout'];
+  //final List<String> colorCodes = <String>['Dữ liệu tổng hợp', 'Thêm cơ sở', 'Tìm cơ sở','Tùy chọn','Đăng xuất'];
 
   @override
   Widget build(BuildContext context) {
@@ -74,42 +100,22 @@ class _WebViewContainerState extends State<WebViewContainer> {
                 child: Text('Quản trị vùng trồng',
                 style: TextStyle(color: Colors.white)),
               ),
-              ListTile(
-                leading: Icon(Icons.analytics),
-                title: const Text('Dữ liệu tổng hợp'),
-                onTap: () {
-                  Navigator.push(context,MaterialPageRoute(builder: (context) => WebViewContainer(_url,'data-report','Dữ liệu tổng hợp')),);
+              ListView.separated(
+                padding: const EdgeInsets.all(8),
+                itemCount: app_data.length,
+                shrinkWrap: true,
+                itemBuilder: (BuildContext context, int index) {
+                  return ListTile(
+                    leading: loadIcon(app_data[index][1]),
+                    title: Text(app_data[index][1]),
+                    onTap: () {
+                      Navigator.push(context,MaterialPageRoute(builder: (context) => WebViewContainer(_url,app_data[index][2] + coordinates,app_data[index][1],app_data)),);
+                    },
+                  );
                 },
-              ),
-              ListTile(
-                leading: Icon(Icons.add),
-                title: const Text('Thêm cơ sở'),
-                onTap: () {
-                  Navigator.push(context,MaterialPageRoute(builder: (context) => WebViewContainer(_url,'add-workgroup' + coordinates,'Thêm cơ sở')),);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.search),
-                title: const Text('Tìm cơ sở'),
-                onTap: () {
-                  Navigator.push(context,MaterialPageRoute(builder: (context) => WebViewContainer(_url,'search-workgroup' + coordinates,'Tìm cơ sở')),);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.settings),
-                title: const Text('Tùy chọn'),
-                onTap: () {
-                  Navigator.push(context,MaterialPageRoute(builder: (context) => WebViewContainer(_url,'search-workgroup' + coordinates,'Tùy chọn')),);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.logout),
-                title: const Text('Đăng xuất'),
-                onTap: () {
+                separatorBuilder: (BuildContext context, int index) => const Divider(),
+              )
 
-                  Navigator.push(context,MaterialPageRoute(builder: (context) => WebViewContainer(_url,"logout","Đăng xuất")),);
-                },
-              ),
             ],
           ),
         ),
@@ -119,7 +125,7 @@ class _WebViewContainerState extends State<WebViewContainer> {
                 child: WebView(
                     key: _key,
                     javascriptMode: JavascriptMode.unrestricted,
-                    initialUrl: page!='logout'?_url + "?page=" + page:'https://accounts.google.com/Logout',
+                    initialUrl: page!='logout'?_url + page:'https://accounts.google.com/Logout',
                     gestureNavigationEnabled: true,
                     userAgent: "random",
                   )
